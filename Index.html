@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checklist do Casamento – Talles (Versão Melhorada)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      margin: 20px;
+      background: #f4f7f6;
+      color: #333;
+    }
+    h1, h2 {
+      color: #2c3e50;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 5px;
+    }
+    .subtitle {
+      text-align: center;
+      margin-top: 0;
+      color: #7f8c8d;
+      font-weight: normal;
+    }
+    #checklist-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .mes {
+      margin-bottom: 25px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+    .mes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .mes h2 {
+      text-align: left;
+      font-size: 1.4em;
+      margin: 0;
+    }
+    .mes-timeline {
+      font-style: italic;
+      color: #e74c3c;
+      font-size: 0.9em;
+    }
+    .task-label {
+      display: flex;
+      align-items: center;
+      padding: 12px 5px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .task-label:last-child {
+      border-bottom: none;
+    }
+    .task-label:hover {
+      background-color: #f9f9f9;
+    }
+    input[type="checkbox"] {
+      width: 1.3em;
+      height: 1.3em;
+      margin-right: 15px;
+      cursor: pointer;
+      accent-color: #2ecc71;
+    }
+    .concluido {
+      text-decoration: line-through;
+      color: #95a5a6;
+      opacity: 0.7;
+    }
+    /* --- Barra de Progresso --- */
+    .progress-bar-container {
+      width: 100%;
+      background-color: #ecf0f1;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
+      height: 12px;
+    }
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background-color: #2ecc71;
+      border-radius: 10px;
+      transition: width 0.5s ease-in-out;
+      text-align: center;
+      color: white;
+      font-size: 0.8em;
+      line-height: 20px;
+    }
+    #total-progress-container {
+      height: 20px;
+      margin-top: 20px;
+    }
+    #total-progress-bar {
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Checklist do Casamento</h1>
+  <p class="subtitle" id="wedding-title"></p>
+
+  <h2>Progresso Total</h2>
+  <div id="checklist-container">
+    <div id="total-progress-container" class="progress-bar-container">
+      <div id="total-progress-bar" class="progress-bar"></div>
+    </div>
+    <div id="months-container"></div>
+  </div>
+
+  <script>
+    // --- CONFIGURAÇÃO PRINCIPAL ---
+    const weddingDate = new Date('2025-10-25T00:00:00');
+    const groomName = "Talles";
+
+    // --- ESTRUTURA DE DADOS DO CHECKLIST ---
+    // Para adicionar/editar tarefas, apenas modifique aqui!
+    const checklistData = [
+      {
+        monthOffset: 4, // 4 meses antes
+        title: 'JUNHO',
+        tasks: [
+          { id: 'junho1', text: 'Definir orçamento total do casamento' },
+          { id: 'junho2', text: 'Fechar local da cerimônia e da festa' },
+          { id: 'junho3', text: 'Definir estilo do casamento' },
+          { id: 'junho4', text: 'Escolher e reservar buffet, decoração, fotógrafo etc.' },
+          { id: 'junho5', text: 'Fazer lista preliminar de convidados' },
+          { id: 'junho6', text: 'Convidar padrinhos e madrinhas' },
+          { id: 'junho7', text: 'Comprar ou encomendar traje dos noivos' },
+          { id: 'junho8', text: 'Escolher tema de decoração e paleta de cores' }
+        ]
+      },
+      {
+        monthOffset: 3, // 3 meses antes
+        title: 'JULHO',
+        tasks: [
+          { id: 'julho1', text: 'Contratar banda ou DJ' },
+          { id: 'julho2', text: 'Pesquisar e reservar hotel para noite de núpcias' },
+          { id: 'julho3', text: 'Iniciar a pesquisa de alianças' },
+          { id: 'julho4', text: 'Definir e convidar pajens e daminhas' }
+        ]
+      },
+      {
+        monthOffset: 2, // 2 meses antes
+        title: 'AGOSTO',
+        tasks: [
+          { id: 'agosto1', text: 'Comprar as alianças' },
+          { id: 'agosto2', text: 'Enviar "Save the Date" para convidados' },
+          { id: 'agosto3', text: 'Definir o cardápio e fazer a degustação' },
+          { id: 'agosto4', text: 'Contratar serviços de bar' }
+        ]
+      }
+      // Adicione mais meses aqui seguindo o mesmo padrão
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Define o título principal da página
+      document.getElementById('wedding-title').textContent = `${groomName} & Noiva(o) | ${weddingDate.toLocaleDateString('pt-BR')}`;
+      
+      const monthsContainer = document.getElementById('months-container');
+      
+      renderChecklist();
+      loadStateAndAttachListeners();
+      updateProgress();
+
+      function getMonthDiff(d1, d2) {
+        let months;
+        months = (d2.getFullYear() - d1.getFullYear()) * 12;
+        months -= d1.getMonth();
+        months += d2.getMonth();
+        return months <= 0 ? 0 : months;
+      }
+
+      function renderChecklist() {
+        const today = new Date();
+        
+        checklistData.sort((a, b) => b.monthOffset - a.monthOffset); // Garante a ordem correta
+
+        checklistData.forEach(monthData => {
+          const monthDiv = document.createElement('div');
+          monthDiv.className = 'mes';
+          monthDiv.id = `month-${monthData.monthOffset}`;
+
+          const weddingMonth = new Date(weddingDate);
+          weddingMonth.setMonth(weddingMonth.getMonth() - monthData.monthOffset);
+          const monthYear = weddingMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }).toUpperCase();
+          const monthsRemaining = getMonthDiff(today, weddingDate);
+
+          monthDiv.innerHTML = `
+            <div class="mes-header">
+              <h2>${monthYear}</h2>
+              <span class="mes-timeline">${monthData.monthOffset} meses antes</span>
+            </div>
+            <div class="progress-bar-container">
+              <div id="progress-${monthData.monthOffset}" class="progress-bar"></div>
+            </div>
+          `;
+
+          monthData.tasks.forEach(task => {
+            const label = document.createElement('label');
+            label.className = 'task-label';
+            label.innerHTML = `
+              <input type="checkbox" data-id="${task.id}" data-month-id="${monthData.monthOffset}"> ${task.text}
+            `;
+            monthDiv.appendChild(label);
+          });
+          
+          if(monthsRemaining <= monthData.monthOffset) {
+             monthDiv.style.borderColor = '#e74c3c'; // Destaca meses atuais ou passados
+          }
+
+          monthsContainer.appendChild(monthDiv);
+        });
+      }
+      
+      function loadStateAndAttachListeners() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+          // Carregar estado salvo
+          if (localStorage.getItem(cb.dataset.id) === 'true') {
+            cb.checked = true;
+            cb.parentElement.classList.add('concluido');
+          }
+          
+          // Adicionar listener para salvar mudanças
+          cb.addEventListener('change', () => {
+            localStorage.setItem(cb.dataset.id, cb.checked);
+            cb.parentElement.classList.toggle('concluido', cb.checked);
+            updateProgress();
+          });
+        });
+      }
+
+      function updateProgress() {
+        let totalTasks = 0;
+        let totalCompleted = 0;
+
+        checklistData.forEach(monthData => {
+          const tasksInMonth = monthData.tasks.length;
+          let completedInMonth = 0;
+          
+          monthData.tasks.forEach(task => {
+            if (localStorage.getItem(task.id) === 'true') {
+              completedInMonth++;
+            }
+          });
+          
+          totalTasks += tasksInMonth;
+          totalCompleted += completedInMonth;
+
+          const monthProgress = tasksInMonth > 0 ? (completedInMonth / tasksInMonth) * 100 : 0;
+          const monthProgressBar = document.getElementById(`progress-${monthData.monthOffset}`);
+          if (monthProgressBar) {
+            monthProgressBar.style.width = `${monthProgress}%`;
+          }
+        });
+
+        const totalProgress = totalTasks > 0 ? (totalCompleted / totalTasks) * 100 : 0;
+        const totalProgressBar = document.getElementById('total-progress-bar');
+        totalProgressBar.style.width = `${totalProgress}%`;
+        totalProgressBar.textContent = `${Math.round(totalProgress)}%`;
+      }
+    });
+  </script>
+</body>
+</html>
